@@ -12,7 +12,7 @@ openai.api_key = os.environ['OPENAI_API_KEY']
 def review_drug_info_for_sympthoms(drug_name: str, symptoms: str, drug_info: str):
     # todo: improve the prompt if needed..
     prompt = f"You are an expert medical professional, you need to review a medical documentations and help a patient understand if their symptoms are an expected side effect or there is another issue." \
-             f"Did you find the '{symptoms}' in the following text and return relevant sentences:\n\n{drug_info}. Provide your thought, reasoning and action for your response in a clear and concise manner."
+             f"If you find the '{symptoms}' in the following text on {drug_info}, provide your thought, provide the review to the patient in a clear and concise manner. Give it in a Markdown format with <br/> instead of \n for new line."
 
     response = openai.chat.completions.create(
         model="gpt-4o-mini",

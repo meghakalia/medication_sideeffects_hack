@@ -1,6 +1,4 @@
 import xml.etree.ElementTree as ET
-import matplotlib.pyplot as plt
-import seaborn as sns
 from collections import Counter
 import pandas as pd
 import zipfile
@@ -53,21 +51,24 @@ def search_reports_by_active_ingredient( active_ingredient):
 # xml_file_path='faers_xml_2024q2/1_ADR24Q2.xml.zip'
 # xml_name='1_ADR24Q2.xml'
 # Example search: find reports with the active ingredient 'INTERFERON BETA-1A'
-active_ingredient = "advil"
-reaction_df = search_reports_by_active_ingredient( active_ingredient)
 
-# Print number of matching reports
-# print(f"Number of reports with active ingredient '{active_ingredient}': {len(matching_reports)}")
 
-# Create a DataFrame from the reaction counts
-# reaction_df = pd.DataFrame(reaction_counts.items(), columns=['Reaction', 'Frequency'])
+if __name__ == '__main__':
+    active_ingredient = "advil"
+    reaction_df = search_reports_by_active_ingredient( active_ingredient)
 
-# Sort the DataFrame by frequency in descending order
-# reaction_df = reaction_df.sort_values(by='Frequency', ascending=False).reset_index(drop=True)
+    # Print number of matching reports
+    # print(f"Number of reports with active ingredient '{active_ingredient}': {len(matching_reports)}")
 
-# Display the reaction frequency table
-print("\nReaction Frequency Table:")
-print(reaction_df)
+    # Create a DataFrame from the reaction counts
+    # reaction_df = pd.DataFrame(reaction_counts.items(), columns=['Reaction', 'Frequency'])
 
-# Optionally, if you want to save the table to a CSV file
-# reaction_df.to_csv("reaction_frequency_table.csv", index=False)
+    # Sort the DataFrame by frequency in descending order
+    # reaction_df = reaction_df.sort_values(by='Frequency', ascending=False).reset_index(drop=True)
+
+    # Display the reaction frequency table
+    print("\nReaction Frequency Table:")
+    print(reaction_df)
+
+    # Optionally, if you want to save the table to a CSV file
+    # reaction_df.to_csv("reaction_frequency_table.csv", index=False)
