@@ -170,4 +170,4 @@ def reddit_side_effects(drug, side_effect):
 
     return data
 
-print(reddit_side_effects("Accutane", "dryness"))
+# print(reddit_side_effects("Accutane", "dryness"))
