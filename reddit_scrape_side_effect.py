@@ -46,21 +46,22 @@ def get_comments_from_post(post_id):
 def get_top_posts_from_subreddits(subreddits, num_posts=10):
     top_posts = []
     
-    for subreddit_name in subreddits:
-        subreddit = reddit.subreddit(subreddit_name)
-        posts = subreddit.hot(limit=100)  # Fetch hot posts, adjust to 'top' or 'new'
-        
-        # Collect post data and append it to the list
-        for post in posts:
-            top_posts.append({
-                'title': post.title,
-                'score': post.score,
-                'url': post.url,
-                'comments': post.num_comments,
-                'created': post.created_utc,
-                'id': post.id,
-                'subreddit': subreddit_name
-            })
+    # for subreddit_name in subreddits:
+    subreddit_name = subreddits
+    subreddit = reddit.subreddit(subreddit_name)
+    posts = subreddit.hot(limit=100)  # Fetch hot posts, adjust to 'top' or 'new'
+    
+    # Collect post data and append it to the list
+    for post in posts:
+        top_posts.append({
+            'title': post.title,
+            'score': post.score,
+            'url': post.url,
+            'comments': post.num_comments,
+            'created': post.created_utc,
+            'id': post.id,
+            'subreddit': subreddit_name
+        })
     
     # Sort all posts by the number of comments in descending order
     sorted_posts = sorted(top_posts, key=lambda x: x['comments'], reverse=True)
@@ -169,4 +170,4 @@ def reddit_side_effects(drug, side_effect):
 
     return data
 
-print(reddit_side_effects(["Accutane"], "dryness"))
+print(reddit_side_effects("Accutane", "dryness"))
