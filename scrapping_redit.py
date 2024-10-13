@@ -9,10 +9,12 @@
 
 import praw 
 from time import sleep
-
+import ast
 from openai import OpenAI
 import os
 import openai
+import re
+import json
 
 from dotenv import load_dotenv, find_dotenv
 _ = load_dotenv(find_dotenv()) # read local .env file
@@ -138,22 +140,40 @@ else:
 text = comments
 side_effect = 'muscular pain'
 
+def parse_resp(resp):
+    matches = re.findall(r'```json(.*?)```', resp, re.DOTALL)
+    if matches:
+        return ast.literal_eval(matches[0].strip())
+
 def find_side_effects(text, side_effect):
 
-    prompt = f"Did you find the '{side_effect}' in the following text and return relevant sentences:\n\n{text}. Provide your thought, reasoning and action for your response"
+    prompt = f"""Did you find the '{side_effect}' in the following text and return relevant sentences:\n\n{text}.
+    Arrange your response under sections as follows: 
+    in a json file format as follows(encapsulate your output in triple backticks):
+    ```json{{
+        "symptom": "{side_effect}",
+        "symptom present or not": "..." 
+    }}```
+
+    Output:"""
+
+
+    
     client = OpenAI()
 
     response = openai.chat.completions.create(
     model="gpt-4o",  # Specify GPT-4 model
     messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "system", "content": "You are a helpful retrieval system."},
         {"role": "user", "content": prompt}
     ],
     max_tokens=1000,  # Maximum tokens to be returned in the response
     temperature=0.0  # Temperature controls randomness. Lower is more deterministic.
     )
 
-    return response.choices[0].message.content.strip()
+    return response.choices[0].message.content
     
+# data = json.loads(find_side_effects(text, side_effect))
+data = parse_resp(find_side_effects(text, side_effect))
 
-print(find_side_effects(text, side_effect))
+# print(find_side_effects(text, side_effect))
