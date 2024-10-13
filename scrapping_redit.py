@@ -118,27 +118,26 @@ def print_comments_from_post(post):
         # print(f"Comment by {comment.author}: {comment.body}\n")
     return final_comments,''.join(final_comments)
 
-# Example usage
-subreddit_name = 'Accutane'  # Replace with the subreddit you want to search
-highest_commented_post, max_comments = find_highest_commented_post(subreddit_name)
+# # Example usage
+# subreddit_name = 'Accutane'  # Replace with the subreddit you want to search
+# highest_commented_post, max_comments = find_highest_commented_post(subreddit_name)
 
-# Print the details of the post with the most comments
-if highest_commented_post:
-    # print(f"Title: {highest_commented_post.title}")
-    # print(f"Comments: {max_comments}")
-    # print(f"Score: {highest_commented_post.score}")
-    # print(f"URL: {highest_commented_post.url}\n")
+# # Print the details of the post with the most comments
+# if highest_commented_post:
+#     # print(f"Title: {highest_commented_post.title}")
+#     # print(f"Comments: {max_comments}")
+#     # print(f"Score: {highest_commented_post.score}")
+#     # print(f"URL: {highest_commented_post.url}\n")
     
-    # Print all the comments in the thread
-    print("Comments:\n")
-    comment_list, comments =  print_comments_from_post(highest_commented_post)
-    # print(comments)
-else:
-    print("No posts found.")
+#     # Print all the comments in the thread
+#     print("Comments:\n")
+#     comment_list, comments =  print_comments_from_post(highest_commented_post)
+#     # print(comments)
+# else:
+#     print("No posts found.")
 
 
-text = comments
-side_effect = 'muscular pain'
+
 
 def parse_resp(resp):
     matches = re.findall(r'```json(.*?)```', resp, re.DOTALL)
@@ -157,8 +156,6 @@ def find_side_effects(text, side_effect):
 
     Output:"""
 
-
-    
     client = OpenAI()
 
     response = openai.chat.completions.create(
@@ -174,6 +171,118 @@ def find_side_effects(text, side_effect):
     return response.choices[0].message.content
     
 # data = json.loads(find_side_effects(text, side_effect))
-data = parse_resp(find_side_effects(text, side_effect))
+# data = parse_resp(find_side_effects(text, side_effect))
 
 # print(find_side_effects(text, side_effect))
+# Function to get all post information into a single string
+
+# abby's code 
+# Function to get top posts from a list of subreddits
+def get_top_posts_from_subreddits(subreddits, num_posts=10):
+    top_posts = []
+    
+    for subreddit_name in subreddits:
+        subreddit = reddit.subreddit(subreddit_name)
+        posts = subreddit.hot(limit=100)  # Fetch hot posts, adjust to 'top' or 'new'
+        
+        # Collect post data and append it to the list
+        for post in posts:
+            top_posts.append({
+                'title': post.title,
+                'score': post.score,
+                'url': post.url,
+                'comments': post.num_comments,
+                'created': post.created_utc,
+                'id': post.id,
+                'subreddit': subreddit_name
+            })
+    
+    # Sort all posts by the number of comments in descending order
+    sorted_posts = sorted(top_posts, key=lambda x: x['comments'], reverse=True)
+    
+    # Return only the top `num_posts` across all subreddits
+    return sorted_posts[:num_posts]
+
+# Function to assemble information for a single post
+def append_multiple_strings(strings):
+    """Append multiple strings together into a single string."""
+    return ''.join(strings)
+
+def assemble_post_info(post_data):
+    post_info_parts = []  # List to hold parts of the string
+    post_info_parts.append(f"Post Title: {post_data['title']}")
+    post_info_parts.append(f"Subreddit: {post_data['subreddit']}")
+    post_info_parts.append(f"URL: {post_data['url']}")
+    post_info_parts.append(f"Number of Filtered Comments: {len(post_data['comments'])}")
+    post_info_parts.append("Filtered Comments:\n")
+
+    for idx, comment in enumerate(post_data['comments']):
+        post_info_parts.append(f"{idx + 1}: {comment}\n")
+
+    return append_multiple_strings(post_info_parts)  # Use the new function here
+
+def get_all_post_info(subreddits, num_posts=10, symptoms=None):
+    if symptoms is None:
+        keywords = ['side effect', 'side effects', 'unexpected', 'normal', 'weird', 
+                    'reaction']
+    else:
+        keywords = ['side effect', 'side effects', 'unexpected', 'normal', 'weird', 
+                    'reaction']
+        for words in symptoms:
+            keywords.append(words)
+
+    # Get top commented posts from subreddits
+    top_commented_posts = get_top_posts_from_subreddits(subreddits, num_posts)
+    
+    # Dictionary to store filtered comments from each post
+    filtered_comments_by_post = {}
+
+    # Loop over the top posts and fetch comments
+    for post in top_commented_posts:
+        #print(f"Fetching comments from post: {post['title']} (Subreddit: {post['subreddit']})")
+        
+        # Get all comments from the post
+        comments = get_comments_from_post(post['id'])
+        
+        # Filter comments for side effect mentions
+        filtered_comments = filter_side_effect_comments(comments, keywords)
+        
+        # Store the filtered comments in the dictionary, keyed by post ID
+        if filtered_comments:
+            filtered_comments_by_post[post['id']] = {
+                'title': post['title'],
+                'subreddit': post['subreddit'],
+                'url': post['url'],
+                'comments': filtered_comments
+            }
+
+    # Assemble all information into a single string
+    all_post_info = ""
+    for post_id, post_data in filtered_comments_by_post.items():
+        all_post_info += assemble_post_info(post_data) + "\n\n"  # Add double newline for separation
+
+    return all_post_info  # Return the complete information string
+
+
+subreddits = ['Accutane']
+complete_info = get_all_post_info(subreddits, num_posts=10, symptoms = "dryness")  # Get all post info
+
+text = complete_info
+side_effect = 'muscular pain'
+
+# print(get_all_post_info(subreddits))
+# print(find_side_effects(complete_info, "dryness"))
+
+
+# print()
+def reddit_side_effects(drug, side_effect):
+
+    # read the data reddit 
+    text = get_all_post_info(drug, num_posts=10, symptoms = side_effect)  # Get all post info
+
+    # get from reddit 
+    data = parse_resp(find_side_effects(text, side_effect))
+
+    return data
+
+print(reddit_side_effects(["Accutane"], "dryness"))
