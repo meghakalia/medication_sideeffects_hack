@@ -19,3 +19,4 @@ urllib3
 uvicorn
 praw
 openai
+python-dotenv
