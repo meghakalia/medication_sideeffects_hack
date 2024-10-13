@@ -74,7 +74,6 @@
 #     for link in drug_links:
 #         print(link)
 
-
 import requests
 from bs4 import BeautifulSoup
 import os
@@ -136,25 +135,41 @@ def fetch_drug_info(drug_name: str):
         return f"Error: {response.status_code}", []
 
 
-# Function to extract set_id from URLs and download corresponding PDFs
-def download_pdfs(links):
+# Function to scrape each drug information page for additional links with the same set_id
+def scrape_and_download(set_id, page_url):
+    # Create a directory for saving PDFs
     pdf_dir = 'pdfs'
-    os.makedirs(pdf_dir, exist_ok=True)  # Create directory to save PDFs if it doesn't exist
+    os.makedirs(pdf_dir, exist_ok=True)
 
-    for link in links:
-        # Extract set_id from the link
-        set_id = link.split('setid=')[-1].split('&')[0]
-        pdf_url = f"https://dailymed.nlm.nih.gov/dailymed/medguide.cfm?setid={set_id}"
+    # Perform GET request to the drug info page
+    response = requests.get(page_url)
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Download the PDF
-        response = requests.get(pdf_url)
-        if response.status_code == 200:
-            pdf_path = os.path.join(pdf_dir, f"{set_id}.pdf")
-            with open(pdf_path, 'wb') as pdf_file:
-                pdf_file.write(response.content)
-            print(f"Downloaded PDF for set_id {set_id}")
-        else:
-            print(f"Failed to download PDF for set_id {set_id}, status code: {response.status_code}")
+        # Find all links that contain the set_id
+        links = soup.find_all('a', href=lambda href: href and f"setid={set_id}" in href)
+
+        for link in links:
+            link_url = f"https://dailymed.nlm.nih.gov{link['href']}"
+
+            # Check if it's a downloadable PDF link
+            if "medguide.cfm" in link_url:
+                pdf_url = f"https://dailymed.nlm.nih.gov/dailymed/medguide.cfm?setid={set_id}"
+
+                # Download the PDF
+                pdf_response = requests.get(pdf_url)
+                if pdf_response.status_code == 200:
+                    pdf_path = os.path.join(pdf_dir, f"{set_id}.pdf")
+                    with open(pdf_path, 'wb') as pdf_file:
+                        pdf_file.write(pdf_response.content)
+                    print(f"Downloaded PDF for set_id {set_id} from {link_url}")
+                else:
+                    print(
+                        f"Failed to download PDF for set_id {set_id} from {link_url}, status code: {pdf_response.status_code}")
+            else:
+                print(f"Non-downloadable link found: {link_url}")
+    else:
+        print(f"Failed to scrape the drug info page: {page_url}, status code: {response.status_code}")
 
 
 # Example usage
@@ -173,5 +188,7 @@ if __name__ == "__main__":
     for link in drug_links:
         print(link)
 
-    # Download PDFs for all set_ids in the links
-    download_pdfs(drug_links)
+    # Scrape and download PDFs for all set_ids in the links
+    for link in drug_links:
+        set_id = link.split('setid=')[-1].split('&')[0]
+        scrape_and_download(set_id, link)
