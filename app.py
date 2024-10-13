@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query
-from SearchDrug.SearchDrug import fetch_drug_info
+from SearchDrug.SearchDrug import research_drug_and_symptoms
 import requests
 
 app = FastAPI()
@@ -10,9 +10,7 @@ app = FastAPI()
 def drug_search(drug_name: str = Query(..., description="Name of the drug to search"),
                 drug_symptoms: str = Query(None, description="Symptoms to search for")):
     try:
-        return {"drug_name": drug_name, "symptoms": drug_symptoms, "data": "here will be the data..."}
         # Call the function to fetch the drug info
-        drug_info = fetch_drug_info(drug_name)
-        return {"drug_name": drug_name, "data": drug_info}
+        return research_drug_and_symptoms(drug_name, drug_symptoms)
     except Exception as e:
         return {"error": str(e)}
