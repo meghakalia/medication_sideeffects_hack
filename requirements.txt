@@ -21,3 +21,4 @@ praw
 openai
 python-dotenv
 pandas
+seaborn
