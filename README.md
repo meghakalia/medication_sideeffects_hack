@@ -54,7 +54,7 @@ REDDIT_CLIENT_SECRET=your_reddit_client_secret
 docker build -t medication-sideeffects 
 ```
 ```sh
-docker run -p 8080:8080 medication-sideeffects
+docker run -p 8080:8080 medication-sideeffects .
 ```
 
 ### 4. Python Environment
